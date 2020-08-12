@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.sample.service.impl.SampleMapper">
+
+	<resultMap id="sample" type="egovframework.example.sample.service.SampleVO">
+		<result property="id" column="id"/>
+		<result property="name" column="name"/>
+		<result property="description" column="description"/>
+		<result property="useYn" column="use_yn"/>
+		<result property="regUser" column="reg_user"/>
+	</resultMap>
+
+	<insert id="insertSample" parameterType="SampleVO">
+
+			INSERT INTO SAMPLE
+				( ID
+				  , NAME
+				  , DESCRIPTION
+				  , USE_YN
+				  , REG_USER
+				  <if test= "file_name != null and file_name != ''" >
+				  , FILE_NAME
+				  </if>
+				   )
+			VALUES ( #{id}
+				  , #{name}
+				  , #{description}
+				  , #{useYn}
+				  , #{regUser}
+				  <if test= "file_name != null and file_name != ''" >
+				  , #{file_name}
+				  </if> 
+				  )
+				
+	</insert>
+	
+	<insert id="insertFile">
+	
+			INSERT INTO sample_file
+				( 
+				file_name
+				, id 
+				)
+			VALUES ( #{file_name}
+					, #{id} 
+					)
+	</insert>
+
+	<update id="updateSample">
+
+			UPDATE SAMPLE
+			SET ID=#{id}
+				, NAME=#{name}
+				, DESCRIPTION=#{description}
+				, USE_YN=#{useYn}
+				, FILE_NAME=#{file_name}
+				  WHERE ID=#{id}
+
+	</update>
+
+	<delete id="deleteSample">
+
+			DELETE FROM SAMPLE
+			WHERE ID=#{id}
+
+	</delete>
+
+	<select id="selectSample" resultMap="sample">
+
+			SELECT
+				ID, NAME, DESCRIPTION, USE_YN, REG_USER, FILE_NAME
+			FROM SAMPLE
+			WHERE ID=#{id}
+
+	</select>
+
+	<select id="selectSampleList" parameterType="searchVO" resultType="egovMap">
+			SELECT
+				A.ID, A.NAME, A.DESCRIPTION, A.USE_YN, A.REG_USER, A.FILE_NAME
+			FROM (
+					SELECT ROWNUM RNUM, S.*
+					FROM (
+							SELECT
+							ID, NAME, DESCRIPTION, USE_YN, REG_USER, FILE_NAME, ROWNUM
+							FROM SAMPLE
+			WHERE 1=1
+			<if test="searchKeyword != null and searchKeyword != ''">
+		        <choose>
+		            <when test="searchCondition == 0">
+						AND ID LIKE '%' || #{searchKeyword} || '%'
+					</when>
+		            <when test="searchCondition == 1">
+						AND NAME LIKE '%' || #{searchKeyword} || '%'
+					</when>
+				</choose>
+			</if>
+			ORDER BY ID DESC
+			) S
+		) A
+		<![CDATA[WHERE ROWNUM <= #{recordCountPerPage} and RNUM > #{firstIndex}]]>
+	</select>
+
+	<select id="selectSampleListTotCnt" parameterType="searchVO" resultType="int">
+
+			SELECT COUNT(*) totcnt
+			FROM SAMPLE
+			WHERE 1=1
+			<if test="searchKeyword != null and searchKeyword != ''">
+		        <choose>
+		            <when test="searchCondition == 0">
+						AND ID LIKE '%' || #{searchKeyword} || '%'
+					</when>
+		            <when test="searchCondition == 1">
+						AND	NAME LIKE '%' || #{searchKeyword} || '%'
+					</when>
+				</choose>
+			</if>
+	</select>
+
+</mapper>
